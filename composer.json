@@ -1,0 +1,16 @@
+{
+    "name": "gueco/slim-php-newsletter",
+    "type": "project",
+    "authors": [
+        {
+            "name": "crossben",
+            "email": "gueco167@gmail.com"
+        }
+    ],
+    "require": {
+        "slim/slim": "^4.14",
+        "slim/psr7": "^1.7",
+        "php-di/php-di": "^7.1",
+        "vlucas/phpdotenv": "^5.6"
+    }
+}

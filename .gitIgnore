@@ -1,0 +1,27 @@
+# Composer
+/vendor/
+
+# Slim logs (if you're logging any errors)
+logs/
+
+# .env file for sensitive information
+.env
+
+# IDE and editor-specific files
+.idea/
+.vscode/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.swp
+*.bak
+*.tmp
+
+# PHPUnit test result
+phpunit.xml
+
+# Other build artifacts
+*.log
