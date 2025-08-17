@@ -39,16 +39,25 @@ class App
     // Endpoint for subscribing to the newsletter
     public static function subscribe(Request $request, Response $response, $args)
     {
-        $data = json_decode($request->getBody()->getContents(), true);
+        // Get email from request (support both JSON and form data)
+        $contentType = $request->getHeaderLine('Content-Type');
+        if (strpos($contentType, 'application/json') !== false) {
+            // JSON Body
+            $data = json_decode($request->getBody()->getContents(), true);
+            $email = isset($data['email']) ? $data['email'] : null;
+        } else {
+            // Form data (application/x-www-form-urlencoded)
+            $parsedBody = $request->getParsedBody();
+            $email = isset($parsedBody['email']) ? $parsedBody['email'] : null;
+        }
 
         // Validate email
-        if (!isset($data['email']) || !filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
+        if (!$email || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $response->getBody()->write(json_encode(['error' => 'Invalid email']));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
         }
 
         // Check if email already exists
-        $email = $data['email'];
         $db = self::initDB();
         $stmt = $db->prepare("SELECT id FROM subscribers WHERE email = ?");
         $stmt->execute([$email]);
@@ -69,10 +78,20 @@ class App
     // Endpoint for unsubscribing from the newsletter
     public static function unsubscribe(Request $request, Response $response, $args)
     {
-        $email = $args['email'];
+        // Get email from request (support both JSON and form data)
+        $contentType = $request->getHeaderLine('Content-Type');
+        if (strpos($contentType, 'application/json') !== false) {
+            // JSON Body
+            $data = json_decode($request->getBody()->getContents(), true);
+            $email = isset($data['email']) ? $data['email'] : null;
+        } else {
+            // Form data (application/x-www-form-urlencoded)
+            $parsedBody = $request->getParsedBody();
+            $email = isset($parsedBody['email']) ? $parsedBody['email'] : null;
+        }
 
         // Validate email
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        if (!$email || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $response->getBody()->write(json_encode(['error' => 'Invalid email']));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
         }
@@ -94,5 +113,23 @@ class App
 
         $response->getBody()->write(json_encode(['message' => 'Unsubscribed successfully!']));
         return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
+    }
+
+    // Endpoint to check DB connection status
+    public static function dbStatus(Request $request, Response $response, $args)
+    {
+        try {
+            // Attempt a simple query to check DB status
+            $db = self::initDB();
+            $stmt = $db->query("SELECT 1");
+
+            // If query succeeds, return success message
+            $response->getBody()->write(json_encode(['status' => 'Database connection is healthy']));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
+        } catch (PDOException $e) {
+            // If there is an error connecting to the DB
+            $response->getBody()->write(json_encode(['error' => 'Database connection failed', 'details' => $e->getMessage()]));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+        }
     }
 }

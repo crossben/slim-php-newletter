@@ -17,4 +17,7 @@ $app->post('/subscribe', [App::class, 'subscribe']);
 // Define a route for unsubscribing
 $app->delete('/unsubscribe/{email}', [App::class, 'unsubscribe']);
 
+// Define a route to check DB status
+$app->get('/', [App::class, 'dbStatus']);
+
 $app->run();
